@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="800" viewBox="0 0 1400 800">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0%" stop-color="#ff79c6"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+    <style>
+      .title { font-family: Inter, Poppins, system-ui, sans-serif; fill: #fff; font-weight:700 }
+      .sub { font-family: Inter, system-ui, sans-serif; fill: rgba(255,255,255,0.9) }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#g)" />
+  <g transform="translate(80,120)">
+    <text x="0" y="0" class="title" font-size="56">Ethnic wear & lifestyle</text>
+    <text x="0" y="70" class="title" font-size="48">at wholesale prices</text>
+    <text x="0" y="130" class="sub" font-size="20">Sarees, kurtis, dupattas & more — delivered across India.</text>
+    <text x="0" y="160" class="sub" font-size="20">Free delivery on orders above ₹299.</text>
+  </g>
+  <g transform="translate(800,180)">
+    <rect x="0" y="0" width="520" height="420" rx="12" fill="rgba(255,255,255,0.08)" />
+  </g>
+</svg>

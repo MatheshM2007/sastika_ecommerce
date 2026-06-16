@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #020617;
+  --foreground: #f8fafc;
+}
+
+body {
+  @apply bg-surface-950 text-slate-100 antialiased;
+}
+
+@layer utilities {
+  .gradient-brand {
+    @apply bg-gradient-to-r from-fuchsia-600 via-rose-500 to-pink-500;
+  }
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-rose-500/10;
+  }
+}
