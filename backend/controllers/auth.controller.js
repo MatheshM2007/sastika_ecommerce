@@ -82,4 +82,48 @@ const updateProfile = async (req, res) => {
   res.json({ success: true, data: { user: rows[0] } });
 };
 
-module.exports = { register, login, profile, updateProfile };
+const supabaseAuth = async (req, res) => {
+  const { email, name, phone } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email is required' });
+  }
+
+  // Check if user exists
+  const existing = await pool.query('SELECT id, name, email, role, is_active FROM users WHERE email = $1', [email]);
+
+  let user;
+  if (existing.rows.length) {
+    user = existing.rows[0];
+    if (!user.is_active) {
+      return res.status(403).json({ success: false, message: 'Account is deactivated' });
+    }
+    // Update name if provided
+    if (name && name !== user.name) {
+      const { rows } = await pool.query(
+        'UPDATE users SET name = $1 WHERE id = $2 RETURNING id, name, email, role',
+        [name, user.id]
+      );
+      user = rows[0];
+    }
+  } else {
+    // Create new user
+    const displayName = name || (phone ? `User_${phone.slice(-4)}` : email.split('@')[0]);
+    // Generate a random password for social login users
+    const randomPassword = await bcrypt.hash(Math.random().toString(36), 12);
+    const { rows } = await pool.query(
+      `INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, 'customer')
+       RETURNING id, name, email, role`,
+      [displayName, email, randomPassword]
+    );
+    user = rows[0];
+  }
+
+  const token = signToken(user);
+  res.json({
+    success: true,
+    message: 'Authentication successful',
+    data: { user, token },
+  });
+};
+
+module.exports = { register, login, profile, updateProfile, supabaseAuth };

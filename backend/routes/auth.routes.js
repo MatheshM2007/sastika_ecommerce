@@ -15,6 +15,7 @@ const authLimiter = rateLimit({
 
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/supabase', authLimiter, authController.supabaseAuth);
 router.get('/profile', auth, authController.profile);
 router.put('/profile', auth, authController.updateProfile);
 
