@@ -3,19 +3,38 @@
 @tailwind utilities;
 
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #1a1a2e;
+  --foreground: #e0e0e0;
 }
 
 body {
-  @apply bg-surface-950 text-slate-100 antialiased;
+  @apply bg-gradient-to-b from-gray-800 via-gray-900 to-black text-gray-200 antialiased min-h-screen;
 }
 
 @layer utilities {
   .gradient-brand {
-    @apply bg-gradient-to-r from-fuchsia-600 via-rose-500 to-pink-500;
+    @apply bg-gradient-to-r from-purple-700 via-violet-600 to-fuchsia-500;
+  }
+  .gradient-soft {
+    @apply bg-gradient-to-r from-purple-600 to-fuchsia-500;
   }
   .card-hover {
-    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-rose-500/10;
+    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-900/40;
+  }
+  .btn-primary {
+    @apply bg-gradient-to-r from-purple-700 via-violet-600 to-fuchsia-500 text-white font-medium 
+           hover:from-purple-600 hover:via-violet-500 hover:to-fuchsia-400 
+           transition-all duration-200 hover:shadow-lg hover:shadow-purple-800/40 active:scale-[0.98];
+  }
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-lg bg-gray-800/80 border border-gray-600 text-gray-200 
+           focus:border-purple-500 focus:ring-2 focus:ring-purple-800/50 focus:outline-none 
+           placeholder:text-gray-500;
+  }
+  .card-dark {
+    @apply bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-xl;
+  }
+  .section-light {
+    @apply bg-gray-800/40 backdrop-blur-sm;
   }
 }

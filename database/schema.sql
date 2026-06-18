@@ -54,6 +54,18 @@ CREATE TABLE IF NOT EXISTS order_items (
   price NUMERIC(10, 2) NOT NULL CHECK (price >= 0)
 );
 
+CREATE TABLE IF NOT EXISTS banners (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL DEFAULT '',
+  subtitle VARCHAR(300) NOT NULL DEFAULT '',
+  image_url TEXT,
+  link_url VARCHAR(300) NOT NULL DEFAULT '/products',
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(is_active);
@@ -61,3 +73,4 @@ CREATE INDEX IF NOT EXISTS idx_cart_user ON cart(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_banners_active ON banners(is_active);

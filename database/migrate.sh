@@ -1,17 +1,27 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+# Run this script to migrate the database schema (add banners table etc.)
 
-DB_HOST="${DB_HOST:-localhost}"
-DB_PORT="${DB_PORT:-5432}"
-DB_NAME="${DB_NAME:-sastika_db}"
-DB_USER="${DB_USER:-postgres}"
+echo "Running database migration..."
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Add banners table if not exists
+psql "$DATABASE_URL" <<'SQL'
+CREATE TABLE IF NOT EXISTS banners (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL DEFAULT '',
+  subtitle VARCHAR(300) NOT NULL DEFAULT '',
+  image_url TEXT,
+  link_url VARCHAR(300) NOT NULL DEFAULT '/products',
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_banners_active ON banners(is_active);
+SQL
 
-echo "Applying schema..."
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/schema.sql"
-
-echo "Applying seed..."
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_DIR/seed.sql"
-
-echo "Done."
+if [ $? -eq 0 ]; then
+  echo "Migration completed successfully!"
+else
+  echo "Migration failed. Check your DATABASE_URL."
+  exit 1
+fi

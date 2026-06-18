@@ -5,7 +5,7 @@ const generateTracking = () =>
   'SST' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
 
 const createOrder = async (req, res) => {
-  const { shipping_address } = req.body;
+  const { shipping_address, payment_method } = req.body;
   const client = await pool.connect();
 
   try {
@@ -61,7 +61,8 @@ const createOrder = async (req, res) => {
     await client.query('DELETE FROM cart WHERE user_id = $1', [req.user.id]);
 
     let razorpayOrder = null;
-    const paymentMode = process.env.PAYMENT_MODE || 'razorpay';
+    // Use payment_method from request (COD or razorpay), fallback to env
+    const paymentMode = payment_method || process.env.PAYMENT_MODE || 'razorpay';
 
     if (paymentMode === 'cod') {
       await client.query(

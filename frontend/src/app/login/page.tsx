@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { Mail, Phone } from 'lucide-react';
+import { Mail, Phone, QrCode, KeyRound, Crown, Lock } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useAuth } from '@/context/AuthContext';
+import {
+  isPasskeySupported,
+  registerPasskey,
+  authenticateWithPasskey,
+  generateLoginQR,
+} from './passkeyflow';
 
 function LoginForm() {
   const { login, googleLogin, sendPhoneOTP, verifyPhoneOTP } = useAuth();
@@ -14,11 +21,18 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+  const [loginMethod, setLoginMethod] = useState<'email' | 'phone' | 'passkey'>('email');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(false);
+  const [passkeyAvailable, setPasskeyAvailable] = useState(false);
+  const [qrUrl, setQrUrl] = useState('');
+
+  // Check passkey support on mount
+  useState(() => {
+    isPasskeySupported().then(setPasskeyAvailable);
+  });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,10 +96,19 @@ function LoginForm() {
 
   return (
     <div className="space-y-6">
+      {/* Brand Header */}
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-brand mb-4">
+          <Crown className="w-7 h-7 text-white" />
+        </div>
+        <h2 className="font-display text-2xl font-bold text-gray-100">Welcome to Sastika</h2>
+        <p className="text-gray-400 text-sm mt-1">Login to shop royal ethnic wear</p>
+      </div>
+
       {/* Google Login */}
       <button
         onClick={handleGoogleLogin}
-        className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 transition-colors text-sm font-medium"
+        className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-gray-600 bg-gray-800/60 hover:bg-gray-700 transition-colors text-sm font-medium text-gray-200 shadow-sm"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -97,18 +120,18 @@ function LoginForm() {
       </button>
 
       {/* Divider */}
-      <div className="flex items-center gap-3 text-xs text-slate-500">
-        <div className="flex-1 h-px bg-slate-800" />
+      <div className="flex items-center gap-3 text-xs text-gray-500">
+        <div className="flex-1 h-px bg-gray-700" />
         OR
-        <div className="flex-1 h-px bg-slate-800" />
+        <div className="flex-1 h-px bg-gray-700" />
       </div>
 
       {/* Method Tabs */}
-      <div className="flex rounded-xl border border-slate-800 overflow-hidden">
+      <div className="flex rounded-xl border border-gray-600 overflow-hidden bg-gray-800/40">
         <button
           onClick={() => { setLoginMethod('email'); setOtpSent(false); }}
           className={`flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
-            loginMethod === 'email' ? 'gradient-brand text-white' : 'bg-slate-900 text-slate-400'
+            loginMethod === 'email' ? 'gradient-brand text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
           <Mail className="w-4 h-4" /> Email
@@ -116,36 +139,50 @@ function LoginForm() {
         <button
           onClick={() => setLoginMethod('phone')}
           className={`flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
-            loginMethod === 'phone' ? 'gradient-brand text-white' : 'bg-slate-900 text-slate-400'
+            loginMethod === 'phone' ? 'gradient-brand text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'
           }`}
         >
           <Phone className="w-4 h-4" /> Phone OTP
+        </button>
+        <button
+          onClick={() => setLoginMethod('passkey')}
+          className={`flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+            loginMethod === 'passkey' ? 'gradient-brand text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'
+          }`}
+        >
+          <KeyRound className="w-4 h-4" /> Passkey / QR
         </button>
       </div>
 
       {/* Email Login Form */}
       {loginMethod === 'email' && (
         <form onSubmit={submit} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-fuchsia-500 focus:outline-none"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-fuchsia-500 focus:outline-none"
-          />
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="input-field pl-10"
+            />
+          </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="input-field pl-10"
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl gradient-brand text-white font-medium disabled:opacity-50"
+            className="w-full py-3 rounded-xl btn-primary disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Login'}
           </button>
@@ -158,7 +195,7 @@ function LoginForm() {
           {!otpSent ? (
             <>
               <div className="flex gap-2">
-                <span className="px-3 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 text-sm flex items-center">
+                <span className="px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-600 text-gray-300 text-sm flex items-center font-medium">
                   +91
                 </span>
                 <input
@@ -166,44 +203,116 @@ function LoginForm() {
                   placeholder="Phone number (10 digits)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-fuchsia-500 focus:outline-none"
+                  className="input-field flex-1"
                 />
               </div>
               <button
                 onClick={handleSendOTP}
                 disabled={phoneLoading}
-                className="w-full py-3 rounded-xl gradient-brand text-white font-medium disabled:opacity-50"
+                className="w-full py-3 rounded-xl btn-primary disabled:opacity-50"
               >
                 {phoneLoading ? 'Sending OTP...' : 'Send OTP'}
               </button>
             </>
           ) : (
             <>
-              <p className="text-sm text-slate-400 text-center">
-                OTP sent to <span className="text-white">+91 {phone}</span>
+              <p className="text-sm text-gray-400 text-center">
+                OTP sent to <span className="text-purple-300 font-medium">+91 {phone}</span>
               </p>
               <input
                 type="text"
                 placeholder="Enter OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-fuchsia-500 focus:outline-none text-center text-lg tracking-widest"
+                className="input-field text-center text-lg tracking-widest"
               />
               <button
                 onClick={handleVerifyOTP}
                 disabled={loading}
-                className="w-full py-3 rounded-xl gradient-brand text-white font-medium disabled:opacity-50"
+                className="w-full py-3 rounded-xl btn-primary disabled:opacity-50"
               >
                 {loading ? 'Verifying...' : 'Verify OTP'}
               </button>
               <button
                 onClick={() => { setOtpSent(false); setOtp(''); }}
-                className="text-sm text-slate-500 hover:text-slate-300 text-center w-full"
+                className="text-sm text-gray-400 hover:text-gray-300 text-center w-full"
               >
                 Change phone number
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Passkey / QR Login */}
+      {loginMethod === 'passkey' && (
+        <div className="space-y-4">
+          <p className="text-sm text-gray-400 text-center leading-relaxed">
+            Use a <strong className="text-purple-300">passkey</strong> to log in instantly
+            with your fingerprint, face, or device PIN.
+          </p>
+
+          {!passkeyAvailable ? (
+            <div className="bg-amber-900/30 border border-amber-700/50 rounded-xl p-4">
+              <p className="text-xs text-amber-300 text-center">
+                ⚠️ Passkey not available on this device.
+                Use <strong>QR Code</strong> below to log in from another device.
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={async () => {
+                try {
+                  setLoading(true);
+                  const result = await authenticateWithPasskey();
+                  if (result) {
+                    toast.success('Passkey authentication successful!');
+                    const redirect = params.get('redirect') || '/';
+                    router.push(redirect);
+                  }
+                } catch (err: unknown) {
+                  const msg = (err as Error)?.message || 'Passkey authentication failed';
+                  toast.error(msg);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
+              className="w-full py-3 rounded-xl btn-primary disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <KeyRound className="w-5 h-5" />
+              {loading ? 'Authenticating...' : 'Login with Passkey'}
+            </button>
+          )}
+
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex-1 h-px bg-gray-700" />
+            OR SCAN QR
+            <div className="flex-1 h-px bg-gray-700" />
+          </div>
+
+          <div className="flex flex-col items-center gap-3">
+            <button
+              onClick={() => {
+                const url = generateLoginQR();
+                setQrUrl(url);
+              }}
+              className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 font-medium"
+            >
+              <QrCode className="w-5 h-5" />
+              {qrUrl ? 'Refresh QR Code' : 'Generate QR Code'}
+            </button>
+            {qrUrl && (
+              <div className="bg-gray-800 p-4 rounded-xl border border-gray-600 shadow-sm">
+                <QRCodeCanvas value={qrUrl} size={180} />
+              </div>
+            )}
+            {qrUrl && (
+              <p className="text-xs text-gray-400 text-center">
+                Scan this QR with your phone camera to log in instantly.
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -212,18 +321,18 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="max-w-md mx-auto px-4 py-12">
-      <h1 className="font-display text-2xl font-bold text-center mb-2">Welcome to Sastika</h1>
-      <p className="text-slate-400 text-center text-sm mb-8">Login to shop ethnic wear at best prices</p>
-      <Suspense>
-        <LoginForm />
-      </Suspense>
-      <p className="text-center text-sm text-slate-400 mt-6">
-        New here?{' '}
-        <Link href="/register" className="text-fuchsia-400 hover:underline">
-          Create account
-        </Link>
-      </p>
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-b from-gray-800 via-gray-900 to-black px-4 py-12">
+      <div className="w-full max-w-md bg-gray-800/60 backdrop-blur-sm rounded-2xl shadow-xl shadow-purple-900/30 border border-gray-700/50 p-8">
+        <Suspense>
+          <LoginForm />
+        </Suspense>
+        <p className="text-center text-sm text-gray-400 mt-6">
+          New here?{' '}
+          <Link href="/register" className="text-purple-400 font-medium hover:text-purple-300 hover:underline">
+            Create account
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

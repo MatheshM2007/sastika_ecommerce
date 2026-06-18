@@ -19,20 +19,20 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         type="button"
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
-        className="px-3 py-1.5 rounded-lg border border-slate-700 text-sm disabled:opacity-40 hover:bg-slate-800"
+        className="px-3 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-sm disabled:opacity-40 hover:bg-gray-700"
       >
         Prev
       </button>
       {pages.map((p, i) => (
         <span key={p} className="flex items-center gap-2">
-          {i > 0 && pages[i - 1] !== p - 1 && <span className="text-slate-600">…</span>}
+          {i > 0 && pages[i - 1] !== p - 1 && <span className="text-gray-500">…</span>}
           <button
             type="button"
             onClick={() => onPageChange(p)}
             className={`min-w-[36px] px-3 py-1.5 rounded-lg text-sm ${
               p === page
-                ? 'gradient-brand text-white font-medium'
-                : 'border border-slate-700 hover:bg-slate-800'
+                ? 'gradient-brand text-white font-medium shadow-sm'
+                : 'border border-gray-600 text-gray-300 hover:bg-gray-700'
             }`}
           >
             {p}
@@ -43,7 +43,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         type="button"
         disabled={page >= totalPages}
         onClick={() => onPageChange(page + 1)}
-        className="px-3 py-1.5 rounded-lg border border-slate-700 text-sm disabled:opacity-40 hover:bg-slate-800"
+        className="px-3 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-sm disabled:opacity-40 hover:bg-gray-700"
       >
         Next
       </button>

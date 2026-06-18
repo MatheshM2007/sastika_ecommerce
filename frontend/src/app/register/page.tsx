@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Crown, User, Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function RegisterPage() {
@@ -32,47 +33,66 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-12">
-      <h1 className="font-display text-2xl font-bold text-center mb-8">Create Account</h1>
-      <form onSubmit={submit} className="space-y-4">
-        <input
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-fuchsia-500 focus:outline-none"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-fuchsia-500 focus:outline-none"
-        />
-        <input
-          type="password"
-          placeholder="Password (min 6 chars)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          className="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-fuchsia-500 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-xl gradient-brand text-white font-medium"
-        >
-          {loading ? 'Creating...' : 'Sign Up'}
-        </button>
-      </form>
-      <p className="text-center text-sm text-slate-400 mt-6">
-        Already have an account?{' '}
-        <Link href="/login" className="text-fuchsia-400 hover:underline">
-          Login
-        </Link>
-      </p>
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-b from-gray-800 via-gray-900 to-black px-4 py-12">
+      <div className="w-full max-w-md bg-gray-800/60 backdrop-blur-sm rounded-2xl shadow-xl shadow-purple-900/30 border border-gray-700/50 p-8">
+        {/* Brand Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl gradient-brand mb-4">
+            <Crown className="w-7 h-7 text-white" />
+          </div>
+          <h1 className="font-display text-2xl font-bold text-gray-100">Create Account</h1>
+          <p className="text-gray-400 text-sm mt-1">Join the royal family of Sastika</p>
+        </div>
+
+        <form onSubmit={submit} className="space-y-4">
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="input-field pl-10"
+            />
+          </div>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="input-field pl-10"
+            />
+          </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="password"
+              placeholder="Password (min 6 chars)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="input-field pl-10"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-xl btn-primary disabled:opacity-50"
+          >
+            {loading ? 'Creating...' : 'Sign Up'}
+          </button>
+        </form>
+        <p className="text-center text-sm text-gray-400 mt-6">
+          Already have an account?{' '}
+          <Link href="/login" className="text-purple-400 font-medium hover:text-purple-300 hover:underline">
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

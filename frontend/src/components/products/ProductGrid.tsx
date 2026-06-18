@@ -47,7 +47,7 @@ export function ProductGrid({
 
   if (!products.length) {
     return (
-      <p className="text-center text-slate-500 py-16">
+      <p className="text-center text-gray-400 py-16">
         No products found. Try another search.
       </p>
     );

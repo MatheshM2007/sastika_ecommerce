@@ -8,6 +8,7 @@ import {
   ShoppingCart,
   Users,
   BarChart3,
+  Image,
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -18,6 +19,7 @@ const links = [
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 

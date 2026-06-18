@@ -15,10 +15,10 @@ export function CategoryChips({ selected, onSelect }: CategoryChipsProps) {
           key={cat}
           type="button"
           onClick={() => onSelect(cat)}
-          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
             selected === cat
-              ? 'gradient-brand text-white'
-              : 'bg-slate-900 border border-slate-700 text-slate-300 hover:border-fuchsia-500'
+              ? 'gradient-brand text-white shadow-md'
+              : 'bg-gray-800/60 border border-gray-600 text-gray-300 hover:border-purple-500 hover:bg-gray-700'
           }`}
         >
           {cat}
