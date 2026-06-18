@@ -1,0 +1,9 @@
+{
+  "name": "sastika-api",
+  "version": "1.0.0",
+  "description": "Sastika E-commerce Backend API",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "build": "cd backend && npm install"
+  }
+}
