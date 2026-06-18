@@ -72,8 +72,8 @@ app.use('/api/banners', bannerRoutes);
 
 app.use(errorHandler);
 
-// Only listen when not running on Vercel (serverless)
-if (process.env.NODE_ENV !== 'production') {
+// Listen on Render/VPS — skip listening if running as Vercel serverless
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Sastika API running on http://localhost:${PORT}`);
   });
