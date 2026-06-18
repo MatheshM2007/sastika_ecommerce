@@ -6,6 +6,9 @@ if (process.env.DATABASE_URL) {
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 15000,
+    idleTimeoutMillis: 30000,
+    family: 4, // Force IPv4 to avoid Render IPv6 connection issues
   });
 } else {
   pool = new Pool({
