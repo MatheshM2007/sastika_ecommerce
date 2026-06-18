@@ -99,6 +99,7 @@ export default function AdminBannersPage() {
           >
             <div className="w-32 h-20 rounded-lg overflow-hidden bg-gray-700 shrink-0">
               {b.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={b.image_url} alt={b.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">No image</div>
@@ -156,6 +157,7 @@ export default function AdminBannersPage() {
             />
             {form.image_url && (
               <div className="w-full h-32 rounded-lg overflow-hidden bg-gray-800 border border-gray-700">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={form.image_url} alt="preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               </div>
             )}

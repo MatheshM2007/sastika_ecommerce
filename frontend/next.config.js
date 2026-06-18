@@ -6,6 +6,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'http', hostname: 'localhost', port: '5000', pathname: '/uploads/**' },
       { protocol: 'https', hostname: '**.onrender.com', pathname: '/uploads/**' },
+      { protocol: 'https', hostname: '**.vercel.app', pathname: '/uploads/**' },
     ],
   },
 };

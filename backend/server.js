@@ -27,6 +27,7 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 const allowedOrigins = [
   'http://localhost:3000',
   'https://sastika-ecommerce.vercel.app',
+  'https://sastika-ecommerce-2rit.vercel.app',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 

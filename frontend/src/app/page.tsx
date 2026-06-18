@@ -47,6 +47,7 @@ export default function HomePage() {
         {activeBanner && activeBanner.image_url ? (
           <>
             <div className="absolute inset-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={activeBanner.image_url}
                 alt={activeBanner.title}
