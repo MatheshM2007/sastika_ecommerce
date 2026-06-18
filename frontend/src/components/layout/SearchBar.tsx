@@ -21,13 +21,28 @@ export function SearchBar({ className = '' }: { className?: string }) {
 
   return (
     <form onSubmit={submit} className={`relative flex-1 max-w-xl ${className}`}>
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
       <input
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search sarees, kurtis, ethnic wear..."
-        className="w-full pl-10 pr-4 py-2.5 rounded-full bg-gray-800 border border-gray-600 text-gray-200 text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-800/50 placeholder:text-gray-500"
+        className="w-full pl-10 pr-4 py-2.5 rounded-full text-sm outline-none transition-all duration-300"
+        style={{
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          color: '#f5f5f7',
+        }}
+        onFocus={e => {
+          (e.target as HTMLInputElement).style.background = 'rgba(255,255,255,0.08)';
+          (e.target as HTMLInputElement).style.borderColor = 'rgba(168,85,247,0.5)';
+          (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px rgba(168,85,247,0.12), 0 0 20px rgba(168,85,247,0.1)';
+        }}
+        onBlur={e => {
+          (e.target as HTMLInputElement).style.background = 'rgba(255,255,255,0.05)';
+          (e.target as HTMLInputElement).style.borderColor = 'rgba(255,255,255,0.08)';
+          (e.target as HTMLInputElement).style.boxShadow = 'none';
+        }}
       />
     </form>
   );

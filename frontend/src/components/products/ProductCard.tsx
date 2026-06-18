@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Zap, Star } from 'lucide-react';
+import { ShoppingBag, Zap, Star, Heart } from 'lucide-react';
 import { toast } from 'sonner';
+import { useState } from 'react';
 import { api, API_URL } from '@/lib/api';
 import { formatINR, discountPercent, imageSrc } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
@@ -16,102 +17,118 @@ export function ProductCard({ product }: { product: Product }) {
   const { refreshCart, setDrawerOpen } = useCart();
   const router = useRouter();
   const off = discountPercent(Number(product.price), Number(product.mrp));
+  const [wished, setWished] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const addToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!user) {
-      toast.error('Please login to add items');
-      return;
-    }
+    if (!user) { toast.error('Please login to add items'); return; }
+    setAdding(true);
     try {
       await api.post('/cart/add', { product_id: product.id, quantity: 1 });
       await refreshCart();
       setDrawerOpen(true);
       toast.success('Added to cart');
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to add';
-      toast.error(msg);
+      toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to add');
+    } finally {
+      setAdding(false);
     }
   };
 
   const buyNow = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!user) {
-      toast.error('Please login first');
-      router.push('/login?redirect=/checkout');
-      return;
-    }
+    if (!user) { toast.error('Please login first'); router.push('/login?redirect=/checkout'); return; }
     try {
       await api.post('/cart/add', { product_id: product.id, quantity: 1 });
       await refreshCart();
       router.push('/checkout');
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to process';
-      toast.error(msg);
+      toast.error((err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to process');
     }
   };
 
   return (
-    <div className="group bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden shadow-sm hover:shadow-lg hover:shadow-purple-900/30 transition-all duration-200 hover:-translate-y-1">
+    <div className="group relative glass-card overflow-hidden">
+      {/* Image */}
       <Link href={`/products/${product.id}`}>
-        <div className="relative aspect-square bg-gray-700 overflow-hidden">
+        <div className="relative aspect-square overflow-hidden rounded-t-[18px] bg-white/5">
           <Image
             src={imageSrc(product.image_url, API_URL)}
             alt={product.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
             sizes="(max-width:768px) 50vw, 25vw"
           />
+
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+          {/* Discount badge */}
           {off > 0 && (
-            <span className="absolute top-2 left-2 bg-gradient-to-r from-purple-600 to-fuchsia-500 text-white text-xs font-bold px-2 py-0.5 rounded">
+            <span className="badge-sale absolute top-3 left-3 shadow-lg">
               {off}% OFF
             </span>
           )}
+
+          {/* Wishlist */}
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); setWished(!wished); toast.success(wished ? 'Removed from wishlist' : 'Added to wishlist'); }}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full glass flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
+          >
+            <Heart className={`w-4 h-4 transition-colors ${wished ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+          </button>
+
+          {/* Add to cart on hover */}
           <button
             type="button"
             onClick={addToCart}
-            className="absolute bottom-2 right-2 p-2 rounded-full gradient-brand text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+            disabled={adding}
+            className="absolute bottom-3 right-3 w-9 h-9 rounded-full gradient-brand flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 disabled:opacity-50"
             aria-label="Add to cart"
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingBag className="w-4 h-4 text-white" />
           </button>
         </div>
       </Link>
-      <div className="p-3.5">
+
+      {/* Info */}
+      <div className="p-4">
         <Link href={`/products/${product.id}`}>
-          <div className="flex items-center gap-1 mb-1">
-            <span className="text-[10px] font-medium text-purple-300 bg-purple-900/40 px-1.5 py-0.5 rounded">
-              {product.category}
-            </span>
-          </div>
-          <h3 className="text-sm font-medium line-clamp-2 text-gray-200 min-h-[2.5rem]">
+          {/* Category */}
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-purple-400/80 mb-1.5 block">
+            {product.category}
+          </span>
+
+          {/* Title */}
+          <h3 className="text-sm font-medium line-clamp-2 text-white/90 leading-snug min-h-[2.5rem] group-hover:text-white transition-colors">
             {product.title}
           </h3>
-          <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-lg font-bold text-purple-300">{formatINR(Number(product.price))}</span>
+
+          {/* Price */}
+          <div className="flex items-baseline gap-2 mt-2.5">
+            <span className="text-base font-bold gradient-brand-text">{formatINR(Number(product.price))}</span>
             {Number(product.mrp) > Number(product.price) && (
-              <span className="text-xs text-gray-500 line-through">
-                {formatINR(Number(product.mrp))}
-              </span>
+              <span className="text-xs text-white/30 line-through">{formatINR(Number(product.mrp))}</span>
             )}
           </div>
+
+          {/* Free delivery */}
           {Number(product.price) >= 299 && (
-            <p className="text-[10px] text-emerald-400 mt-1 flex items-center gap-1">
-              <Star className="w-3 h-3" /> Free Delivery
+            <p className="text-[10px] text-emerald-400/80 mt-1.5 flex items-center gap-1">
+              <Star className="w-3 h-3 fill-emerald-400 text-emerald-400" /> Free Delivery
             </p>
           )}
         </Link>
-        {/* Buy Now Button */}
+
+        {/* Buy Now */}
         <button
           onClick={buyNow}
-          className="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-purple-700 via-violet-600 to-fuchsia-500 hover:from-purple-600 hover:via-violet-500 hover:to-fuchsia-400 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-lg hover:shadow-purple-800/40 active:scale-[0.98]"
+          className="mt-3.5 w-full py-2.5 rounded-xl btn-primary text-xs font-semibold flex items-center justify-center gap-2"
         >
-          <Zap className="w-3.5 h-3.5" />
-          Buy Now
+          <Zap className="w-3.5 h-3.5 relative z-10" />
+          <span>Buy Now</span>
         </button>
       </div>
     </div>
